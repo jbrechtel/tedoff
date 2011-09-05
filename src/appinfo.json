@@ -1,0 +1,9 @@
+{
+  "id": "com.wtfware.tedoff",
+  "version": "1.0.0",
+  "vendor": "WTFWare",
+  "type": "web",
+  "main": "index.html",
+  "title": "TED offline viewer",
+  "uiRevision": "2"
+}
