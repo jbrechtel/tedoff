@@ -14,6 +14,7 @@ enyo.kind({
     },
     {name: "getFeed", kind: "WebService", onSuccess: "gotFeedSuccess", onFailure: "gotFeedFailure"},
     {kind: "PageHeader", content: "TED Talks -- Offline Viewer"},
+    {name: "note", content: "Note: See TED folder in Photos & Videos app to view downloaded videos"},
     {kind: "Scroller", flex: 1, components: [
         {name: "list", kind: "VirtualRepeater", onSetupRow: "getListItem",
             components: [
@@ -74,7 +75,7 @@ enyo.kind({
 
     var result = this.$.fileDownload.call({
       target: feed.enclosure.url,
-      targetDir: "/media/internal/downloads/ted",
+      targetDir: "/media/internal/downloads/TED",
       mime: feed.enclosure.type,
       keepFilenameOnRedirect: false,
       canHandlePause: true,
