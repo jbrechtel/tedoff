@@ -19,7 +19,7 @@ enyo.kind({
             components: [
                 {kind: "Item", layoutKind: "VFlexLayout",
                   components: [
-                    {name: "title", kind: "Divider"},
+                    {name: "title", kind: "Header"},
                     {name: "description"},
                     {kind: enyo.HFlexBox, components: [
                       {name: "downloadButton", kind: "Button", caption: "Download", onclick: "downloadVideo"}
@@ -58,7 +58,7 @@ enyo.kind({
     if(!item) {
       return false;
     }
-    this.$.title.setCaption(item.title);
+    this.$.title.setContent(item.title);
     this.$.description.setContent(item.description);
     this.videos[inIndex].downloaded = false;
     return true;
