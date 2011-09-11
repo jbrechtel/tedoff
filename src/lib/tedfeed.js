@@ -20,7 +20,10 @@ enyo.kind({
                 {kind: "Item", layoutKind: "VFlexLayout",
                   components: [
                     {name: "title", kind: "Header"},
-                    {name: "description"},
+                    {kind: enyo.HFlexBox, padding: "5px", components: [
+                      {name: "image", kind: enyo.Image},
+                      {name: "description", flex:1}
+                    ]},
                     {kind: enyo.HFlexBox, components: [
                       {name: "downloadButton", kind: "Button", caption: "Download", onclick: "downloadVideo"}
                     ]}
@@ -31,7 +34,8 @@ enyo.kind({
   ],
   loadFeed: function() {
     var url = "http://query.yahooapis.com/v1/public/yql?q=select"
-      + "%20enclosure%2C%20title%2C%20description%20from%20rss%20where%20url%3D%22"
+      + "%20enclosure%2C%20title%2C%20description%2C%20thumbnail%20"
+      + "from%20rss%20where%20url%3D%22"
       + "http://www.ted.com/talks/rss%22&format=json&callback=";
     this.$.getFeed.setUrl(url);
     this.$.getFeed.call();
@@ -60,6 +64,7 @@ enyo.kind({
     }
     this.$.title.setContent(item.title);
     this.$.description.setContent(item.description);
+    this.$.image.setSrc(item.thumbnail.url);
     this.videos[inIndex].downloaded = false;
     return true;
   },
