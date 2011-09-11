@@ -9,8 +9,14 @@ enyo.kind({
       method : "download",
       onSuccess : "downloadFinished",
       onFailure : "downloadFail",
-      onResponse : "gotResponse",
-      subscribe : true
+      subscribe : false
+    },
+    {
+        name: "db",
+        kind: "onecrayon.Database",
+        database: 'ext:TEDOff',
+        version: "1",
+        debug: true
     },
     {name: "getFeed", kind: "WebService", onSuccess: "gotFeedSuccess", onFailure: "gotFeedFailure"},
     {kind: "PageHeader", content: "TED Talks -- Offline Viewer"},
@@ -40,7 +46,7 @@ enyo.kind({
     this.$.getFeed.call();
   },
   gotFeedSuccess: function(inSender, inResponse) {
-    this.results = inResponse.query.results.item;
+    this.videos = inResponse.query.results.item;
     this.$.list.render();
   },
   gotFeedFailure: function(inSender, inResponse) {
@@ -48,34 +54,36 @@ enyo.kind({
   },
   create: function() {
     this.inherited(arguments);
-    this.results = [];
+    this.videos = [];
   },
   getListItem: function(inSender, inIndex) {
-    var item = this.results[inIndex];
+    var item = this.videos[inIndex];
     if(!item) {
       return false;
     }
     this.$.title.setCaption(item.title);
     this.$.description.setContent(item.description);
+    this.videos[inIndex].downloaded = false;
     return true;
   },
   videoClick: function(inSender, inEvent) {
-    var feed = this.results[inEvent.rowIndex];
-    this.$.fileDownload.call({
+    var feed = this.videos[inEvent.rowIndex];
+    var result = this.$.fileDownload.call({
       target: feed.enclosure.url,
+      targetDir: "/media/internal/downloads/ted",
       mime: feed.enclosure.type,
       keepFilenameOnRedirect: false,
       canHandlePause: true,
       subscribe: true
     });
   },
-  downloadFinished: function() {
-    enyo.log("downloadFinished...");
+  downloadFinished: function(inSender, inResponse) {
+    var fullPath = inResponse.destPath;
+    var fileName = inResponse.destFile;
+    enyo.log("downloaded: " + fullPath);
+    enyo.windows.addBannerMessage("OK! Yeah!", {}, null, null, null, null);
   },
   downloadFailed: function() {
     enyo.log("failed...");
-  },
-  onResponse: function() {
-    enyo.log("onResponse...");
   }
 });
