@@ -17,10 +17,13 @@ enyo.kind({
     {kind: "Scroller", flex: 1, components: [
         {name: "list", kind: "VirtualRepeater", onSetupRow: "getListItem",
             components: [
-                {kind: "Item", layoutKind: "VFlexLayout", onclick: "videoClick",
+                {kind: "Item", layoutKind: "VFlexLayout",
                   components: [
                     {name: "title", kind: "Divider"},
-                    {name: "description"}
+                    {name: "description"},
+                    {kind: enyo.HFlexBox, components: [
+                      {name: "downloadButton", kind: "Button", caption: "Download", onclick: "downloadVideo"}
+                    ]}
                 ]}
             ]
         }
@@ -60,8 +63,8 @@ enyo.kind({
     this.videos[inIndex].downloaded = false;
     return true;
   },
-  videoClick: function(inSender, inEvent) {
-    var feed = this.videos[inEvent.rowIndex];
+  downloadVideo: function(inSender, inEvent) {
+    var feed = this.videos[this.$.list.fetchRowIndex()];
     enyo.windows.addBannerMessage("Downloading: " + feed.title, "{}", null, null, null, null);
 
     var result = this.$.fileDownload.call({
