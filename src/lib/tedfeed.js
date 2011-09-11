@@ -7,25 +7,13 @@ enyo.kind({
       kind : "PalmService",
       service : "palm://com.palm.downloadmanager/",
       method : "download",
-      onSuccess : "downloadFinished",
+      onSuccess : "downloadUpdate",
       onFailure : "downloadFail",
-      subscribe : false
-    },
-    {
-        name: "db",
-        kind: "onecrayon.Database",
-        database: 'ext:TEDOff',
-        version: "1",
-        debug: true
+      onResponse: "gotResponse",
+      subscribe : true
     },
     {name: "getFeed", kind: "WebService", onSuccess: "gotFeedSuccess", onFailure: "gotFeedFailure"},
     {kind: "PageHeader", content: "TED Talks -- Offline Viewer"},
-    {kind: "RowGroup", caption: "Feed URL", components: [
-          {kind: "InputBox", components: [
-              {name: "feedUrl", kind: "Input", flex: 1},
-              {kind: "Button", caption: "Get Feed", onclick: "btnClick"}
-          ]}
-    ]},
     {kind: "Scroller", flex: 1, components: [
         {name: "list", kind: "VirtualRepeater", onSetupRow: "getListItem",
             components: [
@@ -38,7 +26,7 @@ enyo.kind({
         }
     ]}
   ],
-  btnClick: function() {
+  loadFeed: function() {
     var url = "http://query.yahooapis.com/v1/public/yql?q=select"
       + "%20enclosure%2C%20title%2C%20description%20from%20rss%20where%20url%3D%22"
       + "http://www.ted.com/talks/rss%22&format=json&callback=";
@@ -47,6 +35,10 @@ enyo.kind({
   },
   gotFeedSuccess: function(inSender, inResponse) {
     this.videos = inResponse.query.results.item;
+    for(var i = 0; i < this.videos.length; i++) {
+      var feed = this.videos[i];
+      this.feedsByFileName[this.fileNameFromUrl(feed.enclosure.url)] = feed;
+    }
     this.$.list.render();
   },
   gotFeedFailure: function(inSender, inResponse) {
@@ -55,6 +47,8 @@ enyo.kind({
   create: function() {
     this.inherited(arguments);
     this.videos = [];
+    this.feedsByFileName = {};
+    this.loadFeed();
   },
   getListItem: function(inSender, inIndex) {
     var item = this.videos[inIndex];
@@ -68,6 +62,8 @@ enyo.kind({
   },
   videoClick: function(inSender, inEvent) {
     var feed = this.videos[inEvent.rowIndex];
+    enyo.windows.addBannerMessage("Downloading: " + feed.title, "{}", null, null, null, null);
+
     var result = this.$.fileDownload.call({
       target: feed.enclosure.url,
       targetDir: "/media/internal/downloads/ted",
@@ -77,13 +73,21 @@ enyo.kind({
       subscribe: true
     });
   },
-  downloadFinished: function(inSender, inResponse) {
-    var fullPath = inResponse.destPath;
-    var fileName = inResponse.destFile;
-    enyo.log("downloaded: " + fullPath);
-    enyo.windows.addBannerMessage("OK! Yeah!", {}, null, null, null, null);
+  downloadUpdate: function(inSender, inResponse) {
+    enyo.log("response: " + JSON.stringify(inResponse));
+    if(inResponse.completed) {
+      enyo.log("response: " + JSON.stringify(this.feedsByFileName));
+      var fileName = this.fileNameFromUrl(inResponse.url);
+      var feed = this.feedsByFileName[fileName];
+      enyo.windows.addBannerMessage("Finished: " + feed.title, "{}", null, null, null, null);
+    }
   },
   downloadFailed: function() {
-    enyo.log("failed...");
-  }
+    enyo.windows.addBannerMessage("Download failed.  Please try again", "{}", null, null, null, null);
+  },
+  fileNameFromUrl: function(url) {
+    var parts = url.split("/");
+    return parts[parts.length - 1];
+  },
+  gotResponse: function() {}
 });
